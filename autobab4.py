@@ -1,17 +1,17 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="AutoBab4 - Olah Data Cepat", page_icon="🎓", layout="centered")
 
-# --- KUNCI BRANKAS OPENAI ---
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# --- KUNCI BRANKAS OPENAI (SINTAKS VERSI TERBARU) ---
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # ==========================================
 # --- SISTEM GEMBOK PASSWORD CEO ---
 # ==========================================
-PASSWORD_HARIAN = "LULUSCEPAT"  # Password paket 29k (ganti tiap hari)
-PASSWORD_VIP = "VIPBAB4"        # Password paket 49k (jangan diganti seminggu)
+PASSWORD_HARIAN = "LULUSCEPAT"  
+PASSWORD_VIP = "VIPBAB4"        
 
 st.title("🎓 Mesin AutoBab4 - Olah Data Cepat")
 st.markdown("Masukkan data penelitian kamu di bawah ini, dan biarkan AI menyusun paragraf pembahasan Bab 4 kamu secara instan!")
@@ -22,7 +22,7 @@ input_pass = st.text_input("🔑 Masukkan Password Akses:", type="password")
 if input_pass != PASSWORD_HARIAN and input_pass != PASSWORD_VIP:
     st.warning("🔒 Aplikasi terkunci. Silakan masukkan password yang valid.")
     st.info("💡 Belum punya password? Beli akses Premium di link bio TikTok / Lynk.id sekarang!")
-    st.stop() # Ini fungsi sakti biar form skripsi di bawahnya ngga muncul
+    st.stop() 
 # ==========================================
 # --- BATAS GEMBOK ---
 # ==========================================
@@ -38,11 +38,12 @@ with col2:
     variabel_y = st.text_input("Variabel Dependen (Y)", placeholder="Contoh: Kepuasan Pelanggan")
     arah_hubungan = st.selectbox("Arah Hubungan", ["Positif", "Negatif"])
 
-teori = st.text_input("Grand Theory / Ahli yang Digunakan", placeholder="Contoh: Kotler & Keller (2016)")
+# DIUBAH JADI TEXT_AREA BIAR BISA BANYAK
+teori = st.text_area("Grand Theory / Ahli yang Digunakan (Bisa lebih dari 1)", placeholder="1. Kotler & Keller (2016)\n2. Tjiptono (2019)")
 
 st.markdown("**Pemetaan Penelitian Terdahulu:**")
-jurnal_sejalan = st.text_area("Jurnal yang SEJALAN (Mendukung)", placeholder="Contoh: Pratama (2022)")
-jurnal_berbeda = st.text_area("Jurnal yang BERBEDA (Opsional)", placeholder="Contoh: Wijaya (2021) - Kosongkan jika tidak ada")
+jurnal_sejalan = st.text_area("Jurnal yang SEJALAN (Bisa lebih dari 1)", placeholder="1. Pratama (2022)\n2. Budi (2021)")
+jurnal_berbeda = st.text_area("Jurnal yang BERBEDA (Opsional, Bisa lebih dari 1)", placeholder="1. Wijaya (2021)\nKosongkan jika tidak ada")
 
 # --- TOMBOL GENERATE & LOGIKA AI ---
 if st.button("🚀 GENERATE PEMBAHASAN SEKARANG!", use_container_width=True):
@@ -51,10 +52,8 @@ if st.button("🚀 GENERATE PEMBAHASAN SEKARANG!", use_container_width=True):
     else:
         with st.spinner("⏳ AI sedang menyusun paragraf pembahasan yang elegan..."):
             try:
-                # Logika Penentuan Hipotesis
                 status_hipotesis = "DITERIMA (Signifikan)" if p_value < 0.05 else "DITOLAK (Tidak Signifikan)"
 
-                # Prompt Jenius CEO
                 prompt_system = f"""
                 Kamu adalah Dosen Pembimbing Skripsi ahli statistik dan manajemen yang sangat cerdas. 
                 Tugasmu adalah menulis 3 paragraf Pembahasan (Bab 4) berdasarkan data berikut:
@@ -71,14 +70,14 @@ if st.button("🚀 GENERATE PEMBAHASAN SEKARANG!", use_container_width=True):
                 - Paragraf 2: Berikan alasan logis/praktis di lapangan MENGAPA hasil ini terjadi. 
                   * JIKA DITOLAK: Berikan alasan "ngeles" yang akademis kenapa X tidak mempengaruhi Y.
                   * JIKA NEGATIF: Berikan alasan logis kenapa semakin tinggi X justru membuat Y menurun.
-                  Kaitkan alasan praktis ini dengan grand theory dari {teori}.
-                - Paragraf 3: Bandingkan dengan penelitian terdahulu. Nyatakan sejalan dengan {jurnal_sejalan}. Jika {jurnal_berbeda} diisi, sebutkan bahwa hasil ini berbeda dengan penelitian tersebut dan berikan alasan perbedaan (misal beda sampel/karakteristik). Jika {jurnal_berbeda} kosong, buat kalimat penutup yang elegan.
+                  Kaitkan alasan praktis ini dengan grand theory.
+                - Paragraf 3: Bandingkan dengan penelitian terdahulu. Nyatakan sejalan dengan jurnal sejalan. Jika jurnal berbeda diisi, sebutkan bahwa hasil ini berbeda dengan penelitian tersebut dan berikan alasan perbedaan (misal beda sampel/karakteristik). Jika jurnal berbeda kosong, buat kalimat penutup yang elegan.
                 
                 Langsung berikan 3 paragraf tanpa kata pengantar atau penutup tambahan. Gunakan bahasa akademis formal yang rapi.
                 """
 
-                # Tembak ke Mesin OpenAI
-                response = openai.ChatCompletion.create(
+                # SINTAKS OPENAI VERSI TERBARU
+                response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "Anda adalah asisten AI pembuat pembahasan skripsi."},
