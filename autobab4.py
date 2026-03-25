@@ -1,87 +1,95 @@
 import streamlit as st
-from openai import OpenAI
+import openai
+
+# --- KONFIGURASI HALAMAN ---
+st.set_page_config(page_title="AutoBab4 - Olah Data Cepat", page_icon="🎓", layout="centered")
+
+# --- KUNCI BRANKAS OPENAI ---
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # ==========================================
-# 1. TARUH API KEY LU DI SINI COACH!
+# --- SISTEM GEMBOK PASSWORD CEO ---
 # ==========================================
-API_KEY = st.secrets["OPENAI_API_KEY"] 
+PASSWORD_HARIAN = "LULUSCEPAT"  # Password paket 29k (ganti tiap hari)
+PASSWORD_VIP = "VIPBAB4"        # Password paket 49k (jangan diganti seminggu)
 
-# ==========================================
-# 2. TAMPILAN WEB (USER INTERFACE)
-# ==========================================
-st.set_page_config(page_title="AutoBab4 - Olah Data Cepat", page_icon="🔥", layout="centered")
-
-st.title("🔥 Mesin AutoBab4")
-st.markdown("**Generator Pembahasan Bab 4 Otomatis by Olah Data Cepat**")
+st.title("🎓 Mesin AutoBab4 - Olah Data Cepat")
+st.markdown("Masukkan data penelitian kamu di bawah ini, dan biarkan AI menyusun paragraf pembahasan Bab 4 kamu secara instan!")
 st.markdown("---")
 
+input_pass = st.text_input("🔑 Masukkan Password Akses:", type="password")
+
+if input_pass != PASSWORD_HARIAN and input_pass != PASSWORD_VIP:
+    st.warning("🔒 Aplikasi terkunci. Silakan masukkan password yang valid.")
+    st.info("💡 Belum punya password? Beli akses Premium di link bio TikTok / Lynk.id sekarang!")
+    st.stop() # Ini fungsi sakti biar form skripsi di bawahnya ngga muncul
+# ==========================================
+# --- BATAS GEMBOK ---
+# ==========================================
+
+st.success("🔓 Akses Diberikan! Selamat menggunakan AutoBab4.")
+
+# --- FORM INPUT DATA MAHASISWA ---
 col1, col2 = st.columns(2)
-
 with col1:
-    var_x = st.text_input("Variabel Independen (X)", placeholder="Contoh: Kualitas Layanan")
-    var_y = st.text_input("Variabel Dependen (Y)", placeholder="Contoh: Kepuasan Pelanggan")
-    teori = st.text_area("Grand Theory / Ahli", placeholder="Contoh: 1. Kotler (2019)\n2. Tjiptono (2020)")
-    
+    variabel_x = st.text_input("Variabel Independen (X)", placeholder="Contoh: Kualitas Layanan")
+    p_value = st.number_input("Nilai P-Value / Sig.", format="%.3f", value=0.000)
 with col2:
-    p_value = st.text_input("Nilai P-Value / Sig.", placeholder="Contoh: 0.001")
-    arah_pengaruh = st.selectbox("Arah Hubungan", ["Positif", "Negatif"])
-    kesimpulan = st.selectbox("Status Hipotesis", ["DITERIMA (Signifikan)", "DITOLAK (Tidak Signifikan)"])
+    variabel_y = st.text_input("Variabel Dependen (Y)", placeholder="Contoh: Kepuasan Pelanggan")
+    arah_hubungan = st.selectbox("Arah Hubungan", ["Positif", "Negatif"])
 
-st.markdown("---")
-st.markdown("**📚 PEMETAAN PENELITIAN TERDAHULU**")
-col3, col4 = st.columns(2)
+teori = st.text_input("Grand Theory / Ahli yang Digunakan", placeholder="Contoh: Kotler & Keller (2016)")
 
-with col3:
-    penelitian_sejalan = st.text_area("Jurnal yang SEJALAN (Hasilnya Sama)", placeholder="Contoh: Budi (2021)")
-with col4:
-    penelitian_tidak_sejalan = st.text_area("Jurnal yang BERBEDA (Hasilnya Beda)", placeholder="Contoh: Andi (2022)")
+st.markdown("**Pemetaan Penelitian Terdahulu:**")
+jurnal_sejalan = st.text_area("Jurnal yang SEJALAN (Mendukung)", placeholder="Contoh: Pratama (2022)")
+jurnal_berbeda = st.text_area("Jurnal yang BERBEDA (Opsional)", placeholder="Contoh: Wijaya (2021) - Kosongkan jika tidak ada")
 
-st.markdown("---")
-
-# ==========================================
-# 3. TOMBOL EKSEKUSI & LOGIKA AI
-# ==========================================
+# --- TOMBOL GENERATE & LOGIKA AI ---
 if st.button("🚀 GENERATE PEMBAHASAN SEKARANG!", use_container_width=True):
-    if not var_x or not var_y or not p_value:
-        st.warning("⚠️ Woy! Isi dulu variabel dan p-value nya Coach!")
+    if not variabel_x or not variabel_y or not teori:
+        st.error("⚠️ Variabel X, Y, dan Teori wajib diisi!")
     else:
-        with st.spinner("🧠 AI lagi mikir keras ngerangkai kata-kata..."):
+        with st.spinner("⏳ AI sedang menyusun paragraf pembahasan yang elegan..."):
             try:
-                # PROMPT SAKTI: ADAPTASI 2 KOLOM JURNAL
-                prompt_sakti = f"""
-                Bertindaklah sebagai Dosen Pembimbing Akademik yang ahli menyusun kalimat Bab 4 Skripsi Kuantitatif. 
-                Tuliskan 3 paragraf pembahasan Bab 4 yang sangat akademis, mengalir, dan anti-plagiasi berdasarkan data berikut:
-                - Variabel Independen (X): {var_x}
-                - Variabel Dependen (Y): {var_y}
-                - Nilai P-Value: {p_value}
-                - Hasil Uji: Hipotesis {kesimpulan} dengan arah hubungan {arah_pengaruh}.
+                # Logika Penentuan Hipotesis
+                status_hipotesis = "DITERIMA (Signifikan)" if p_value < 0.05 else "DITOLAK (Tidak Signifikan)"
+
+                # Prompt Jenius CEO
+                prompt_system = f"""
+                Kamu adalah Dosen Pembimbing Skripsi ahli statistik dan manajemen yang sangat cerdas. 
+                Tugasmu adalah menulis 3 paragraf Pembahasan (Bab 4) berdasarkan data berikut:
+                - Variabel X: {variabel_x}
+                - Variabel Y: {variabel_y}
+                - Nilai P-Value: {p_value} (Status: {status_hipotesis})
+                - Arah Hubungan: {arah_hubungan}
                 - Grand Theory: {teori}
-                - Penelitian Terdahulu (SEJALAN dengan hasil): {penelitian_sejalan}
-                - Penelitian Terdahulu (TIDAK SEJALAN dengan hasil): {penelitian_tidak_sejalan}
+                - Jurnal Sejalan: {jurnal_sejalan}
+                - Jurnal Berbeda: {jurnal_berbeda}
+
+                ATURAN PENULISAN:
+                - Paragraf 1: Jelaskan makna statistik p-value. Jika < 0.05, hipotesis diterima dan X berpengaruh terhadap Y. Jika > 0.05, hipotesis ditolak dan X tidak berpengaruh. Jelaskan juga arah hubungannya ({arah_hubungan}).
+                - Paragraf 2: Berikan alasan logis/praktis di lapangan MENGAPA hasil ini terjadi. 
+                  * JIKA DITOLAK: Berikan alasan "ngeles" yang akademis kenapa X tidak mempengaruhi Y.
+                  * JIKA NEGATIF: Berikan alasan logis kenapa semakin tinggi X justru membuat Y menurun.
+                  Kaitkan alasan praktis ini dengan grand theory dari {teori}.
+                - Paragraf 3: Bandingkan dengan penelitian terdahulu. Nyatakan sejalan dengan {jurnal_sejalan}. Jika {jurnal_berbeda} diisi, sebutkan bahwa hasil ini berbeda dengan penelitian tersebut dan berikan alasan perbedaan (misal beda sampel/karakteristik). Jika {jurnal_berbeda} kosong, buat kalimat penutup yang elegan.
                 
-                ATURAN PENULISAN (HARUS DIIKUTI):
-                - Paragraf 1: Interpretasi hasil uji statistik. Sebutkan nilai p-value dan dampaknya secara tegas terhadap penerimaan/penolakan hipotesis.
-                - Paragraf 2: Berikan argumentasi praktis yang KONKRET dan LOGIS di dunia nyata. Jelaskan argumen logis mengapa [{var_x}] bisa (atau gagal) mempengaruhi [{var_y}] sesuai dengan hasil uji. Berikan contoh dinamika di lapangan yang relevan.
-                - Paragraf 3: Justifikasi Ilmiah. Susun narasi yang membandingkan hasil temuan ini dengan Grand Theory ({teori}) dan Penelitian Terdahulu. 
-                  * Jika ada data di "Penelitian Terdahulu (SEJALAN)", tegaskan bahwa temuan ini MENDUKUNG/MEMPERKUAT penelitian tersebut.
-                  * Jika ada data di "Penelitian Terdahulu (TIDAK SEJALAN)", sebutkan secara akademis bahwa temuan ini BERBEDA/MEMBANTAH penelitian tersebut, dan berikan sedikit opini akademis wajar mengapa perbedaan ini bisa terjadi (misal beda karakteristik sampel atau waktu).
-                  * Jika salah satu dari bagian penelitian terdahulu kosong, abaikan saja dan fokus pada yang ada isinya secara natural.
-                
-                PENTING: Tulis langsung narasinya menjadi 3 paragraf utuh. Jangan gunakan bullet points. Jangan mengulang instruksi prompt!
+                Langsung berikan 3 paragraf tanpa kata pengantar atau penutup tambahan. Gunakan bahasa akademis formal yang rapi.
                 """
 
-                client = OpenAI(api_key=API_KEY)
-                response = client.chat.completions.create(
+                # Tembak ke Mesin OpenAI
+                response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=[
-                        {"role": "user", "content": prompt_sakti}
-                    ]
+                        {"role": "system", "content": "Anda adalah asisten AI pembuat pembahasan skripsi."},
+                        {"role": "user", "content": prompt_system}
+                    ],
+                    temperature=0.7
                 )
                 
-                hasil_bab4 = response.choices[0].message.content
-                
-                st.success("🎉 BERHASIL! Copy teks di bawah ini ke Word:")
-                st.info(hasil_bab4)
-                
+                hasil = response.choices[0].message.content
+                st.success("✅ Pembahasan Berhasil Dibuat!")
+                st.write(hasil)
+            
             except Exception as e:
-                st.error(f"❌ Error bro: {e}")
+                st.error(f"Terjadi kesalahan sistem: {e}")
